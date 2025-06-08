@@ -1,5 +1,6 @@
 
 // import './App.css'
+import myPic from "../src/assets/myPic.jpg"
 
 interface Details{
   age:number,
@@ -42,7 +43,8 @@ function App() {
       ))
     }
   </ul>
-
+    <h2>My Favourite Emojis 😎</h2>
+    <img src={myPic} alt="myPic" width="400" />
     </>
   )
 }
