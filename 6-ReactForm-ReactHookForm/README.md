@@ -1,54 +1,38 @@
-# React + TypeScript + Vite
+## What is React Hook Form?
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+React Hook Form is a popular library for managing forms in React. It makes form validation, data collection, and error handling simple and efficient, using React hooks.
 
-Currently, two official plugins are available:
+## How Does It Work?
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+1. **useForm Hook:**
+   You use the `useForm` hook to set up your form. This hook gives you methods and objects to register inputs, handle form submission, and track errors.
+2. **Registering Inputs:**
+   Each input field is registered using the `register` function. This connects the field to React Hook Form so it can track its value and validation.
+3. **Validation:**
+   You can add validation rules (like `required`) directly when registering each input. Errors are automatically tracked and can be displayed in the UI.
+4. **Handling Submission:**
+   The `handleSubmit` function wraps your submit handler. When the form is valid, your handler receives the form data.
+5. **Error Handling:**
+   The `formState.errors` object contains any validation errors, which you can display next to the relevant input.
 
-## Expanding the ESLint configuration
+## Why Use React Hook Form?
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+* **Less Boilerplate:** No need to manage input state manually.
+* **Easy Validation:** Built-in validation and error handling.
+* **Performance:** Minimal re-renders for better performance.
+* **Simple Integration:** Works with all input types and custom components.
 
-```js
-export default tseslint.config({
-  extends: [
-    // Remove ...tseslint.configs.recommended and replace with this
-    ...tseslint.configs.recommendedTypeChecked,
-    // Alternatively, use this for stricter rules
-    ...tseslint.configs.strictTypeChecked,
-    // Optionally, add this for stylistic rules
-    ...tseslint.configs.stylisticTypeChecked,
-  ],
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
+## Installation
+
+```
+pnpm add react-hook-form
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+## Schema Validation
 
-export default tseslint.config({
-  plugins: {
-    // Add the react-x and react-dom plugins
-    'react-x': reactX,
-    'react-dom': reactDom,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended typescript rules
-    ...reactX.configs['recommended-typescript'].rules,
-    ...reactDom.configs.recommended.rules,
-  },
-})
+**Step 1:** Install `Yup` into your project.
+
+```
+pnpm add @hookform/resolvers yup
 ```
