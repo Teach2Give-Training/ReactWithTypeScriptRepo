@@ -1,0 +1,163 @@
+{
+  "id": "cce390f7-e7de-4acf-81cb-646edf78c942",
+  "prevId": "a65fd791-8ba1-4723-85bb-6456247ac4e6",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "public.mealTable": {
+      "name": "mealTable",
+      "schema": "",
+      "columns": {
+        "mealId": {
+          "name": "mealId",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "mealName": {
+          "name": "mealName",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "mealUrl": {
+          "name": "mealUrl",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "mealDescription": {
+          "name": "mealDescription",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "mealPrice": {
+          "name": "mealPrice",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "mealBadge": {
+          "name": "mealBadge",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "rating": {
+          "name": "rating",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "default": 0
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        },
+        "updatedAt": {
+          "name": "updatedAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.userTable": {
+      "name": "userTable",
+      "schema": "",
+      "columns": {
+        "userId": {
+          "name": "userId",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "firstName": {
+          "name": "firstName",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "lastName": {
+          "name": "lastName",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "email": {
+          "name": "email",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "password": {
+          "name": "password",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "userType": {
+          "name": "userType",
+          "type": "userType",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "'member'"
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        },
+        "updatedAt": {
+          "name": "updatedAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    }
+  },
+  "enums": {
+    "public.userType": {
+      "name": "userType",
+      "schema": "public",
+      "values": [
+        "member",
+        "admin"
+      ]
+    }
+  },
+  "schemas": {},
+  "sequences": {},
+  "roles": {},
+  "policies": {},
+  "views": {},
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
+}

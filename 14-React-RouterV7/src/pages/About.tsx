@@ -6,7 +6,7 @@ export const About = () => {
     return (
         <>
             <Navbar />
-           <AboutHero/>
+            <AboutHero/>
             <Footer />
         </>
     )

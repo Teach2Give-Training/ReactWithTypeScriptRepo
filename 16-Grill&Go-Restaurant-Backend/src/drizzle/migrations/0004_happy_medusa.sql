@@ -1,0 +1,1 @@
+ALTER TABLE "mealTable" ADD COLUMN "mealId" serial PRIMARY KEY NOT NULL;
