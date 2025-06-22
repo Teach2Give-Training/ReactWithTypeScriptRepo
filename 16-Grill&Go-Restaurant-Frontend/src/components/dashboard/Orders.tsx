@@ -1,7 +1,75 @@
 import { AiFillDelete } from "react-icons/ai"
 import { FiEdit } from "react-icons/fi"
+import { ordersApi } from "../../features/api/ordersApi"
+import { useSelector } from "react-redux"
+import type { RootState } from "../../app/store"
+import { PuffLoader } from "react-spinners"
+import Swal from "sweetalert2"
+
+interface OrderDetails {
+  orderId: number,
+  userId: number,
+  mealId: number,
+  createdAt: string,
+  status: string,
+  meal: {
+    mealName: string,
+    mealBadge: string,
+    mealPrice: number,
+    mealUrl: string
+  }
+}
 
 export const Orders = () => {
+
+  const { isAuthenticated, user } = useSelector((state: RootState) => state.auth)
+
+  const[updateOrder] = ordersApi.useUpdateOrderMutation()
+
+  const userId = user?.userId
+
+  const { data: orderData = [], isLoading, error } = ordersApi.useGetAllOrderForOneUserByIdQuery(userId, {
+    skip: !isAuthenticated
+  })
+  console.log("🚀 ~ Orders ~ orderData:", orderData)
+
+  const getStatusBadge = (status: any) => {
+    switch (status) {
+      case "confirmed": return "badge-success";
+      case "canceled": return "badge-error";
+      case "pending": return "badge-warning";
+      default: return "badge-primary";
+    }
+  }
+
+  const handleEdit = async(orderId:number)=>{
+    Swal.fire({
+                title: "Are you sure?",
+                text: "You want to cancel the order?",
+                icon: "question",
+                showCancelButton: true,
+                confirmButtonColor: "#2563eb",
+                cancelButtonColor: "#f44336",
+                confirmButtonText: "Yes, Cancel it!",
+            }).then(async (result) => {
+              const updatePayload ={
+                orderId:orderId,
+                status:"canceled"
+              }
+                if (result.isConfirmed) {
+                    try {
+                        const res = await updateOrder(updatePayload).unwrap()
+                        console.log(res)
+                        Swal.fire("Canceled!", res.message, "success");
+                    } catch (error) {
+                        Swal.fire("Something went wrong","Pleese Try Again", "error")
+                    }                
+                }
+            });
+  }
+
+
+
   return (
     <>
       <div className="text-2xl font-bold text-center mb-4 text-orange-400">My Orders Page</div>
@@ -21,119 +89,55 @@ export const Orders = () => {
             </tr>
           </thead>
           <tbody>
-            {/* row 1 */}
-            <tr>
-              <th>
-                1
-              </th>
-              <td>
-                <div className="flex items-center gap-3">
-                  <div className="avatar">
-                    <div className="mask mask-squircle h-12 w-12">
-                      <img
-                        src="https://images.unsplash.com/photo-1586190848861-99aa4a171e90"
-                        alt="Avatar Tailwind CSS Component" />
-                    </div>
-                  </div>
-                  <div>
-                    <div className="font-bold">Seafood Paella</div>
-                    <div className="text-sm opacity-50">Special</div>
-                  </div>
+            {
+              error ? (
+                <div>
+                  error while fetching your order..try again
                 </div>
-              </td>
-              <td>
-                KSH:300
-
-              </td>
-              <td>     18/06/2025</td>
-              <th>
-                <div className="badge badge-outline badge-success">Completed</div>
-              </th>
-              <th>
-                
-                <button
-                  className="btn btn-sm btn-outline text-red-500 ml-1 mt-1 hover:bg-red-700"
-                  
-                >
-                  <AiFillDelete />
-                </button>
-              </th>
-            </tr>
-            {/* row 2 */}
-            <tr>
-              <th>
-                2
-              </th>
-              <td>
-                <div className="flex items-center gap-3">
-                  <div className="avatar">
-                    <div className="mask mask-squircle h-12 w-12">
-                      <img
-                        src="https://images.unsplash.com/photo-1586190848861-99aa4a171e90"
-                        alt="Avatar Tailwind CSS Component" />
-                    </div>
-                  </div>
-                  <div>
-                    <div className="font-bold">Seafood Paella</div>
-                    <div className="text-sm opacity-50">Special</div>
-                  </div>
+              ) : isLoading ? (
+                <div>
+                  <PuffLoader />
                 </div>
-              </td>
-              <td>
-                KSH: 230
-
-              </td>
-              <td>     18/06/2025</td>
-              <th>
-                <div className="badge badge-outline badge-error">Cancled</div>
-              </th>
-              <th>
-                
-                <button
-                  className="btn btn-sm btn-outline text-red-500 ml-1  hover:bg-red-700"
-                  
-                >
-                  <AiFillDelete />
-                </button>
-              </th>
-            </tr>
-            {/* row 3 */}
-            <tr>
-              <th>
-                3
-              </th>
-              <td>
-                <div className="flex items-center gap-3">
-                  <div className="avatar">
-                    <div className="mask mask-squircle h-12 w-12">
-                      <img
-                        src="https://images.unsplash.com/photo-1586190848861-99aa4a171e90"
-                        alt="Avatar Tailwind CSS Component" />
-                    </div>
-                  </div>
-                  <div>
-                    <div className="font-bold">Seafood Paella</div>
-                    <div className="text-sm opacity-50">Special</div>
-                  </div>
-                </div>
-              </td>
-              <td>
-                KSH: 500
-
-              </td>
-              <td>     18/06/2025</td>
-              <th>
-                <div className="badge badge-outline badge-warning">Pending</div>
-              </th>
-              <th>
-                <button className="text-blue-700 hover:text-blue-500 btn btn-sm btn-outline">
-                  <FiEdit />
-                </button>
-                
-              </th>
-            </tr>
+              ) : orderData?.length === 0 ? (
+                <tr>
+                  <div>No orders available 😎</div>
+                </tr>
+              ) : (
+                orderData?.map((order: OrderDetails) => (
+                  <tr key={order.orderId}>
+                    <td>{order.orderId}</td>
+                    <td>
+                      <div className="flex items-center gap-3">
+                        <div className="avatar">
+                          <div className="mask mask-squircle h-12 w-12">
+                            <img
+                              src={order.meal?.mealUrl}
+                              alt="Avatar Tailwind CSS Component" />
+                          </div>
+                        </div>
+                        <div>
+                          <div className="font-bold">{order.meal.mealName}</div>
+                          <div className="text-sm opacity-50">{order.meal.mealBadge}</div>
+                        </div>
+                      </div>
+                    </td>
+                    <td>KSH:{order.meal.mealPrice}</td>
+                    <td>{order.createdAt}</td>
+                    <td>  <div className={`badge badge-outline ${getStatusBadge(order.status)} `}>
+                      {order.status}
+                    </div></td>
+                    <td>
+                      <button className="text-blue-700 hover:text-blue-500 btn btn-sm btn-outline"
+                      onClick={()=>handleEdit(order.orderId)}
+                      >
+                        <FiEdit />
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              )
+            }            
           </tbody>
-
         </table>
       </div>
     </>

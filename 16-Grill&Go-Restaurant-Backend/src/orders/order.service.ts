@@ -24,7 +24,7 @@ export const getAllOrdersServices = async (): Promise<TOrderSelect[] | null> => 
                 }
             }
         },
-        orderBy:[desc(orderTable.mealId)]
+        orderBy:[desc(orderTable.orderId)]
     });
 }
 
@@ -42,7 +42,7 @@ export const getAllOrdersForOneUserServices = async (userId:number): Promise<TOr
                 }
             }
         },
-        orderBy:[desc(orderTable.mealId)]
+        orderBy:[desc(orderTable.orderId)]
     });
 }
 
@@ -50,7 +50,7 @@ export const getAllOrdersForOneUserServices = async (userId:number): Promise<TOr
 //Get order by ID
 export const getOrderByIdServices = async (orderId: number): Promise<TOrderSelect | undefined> => {
     return await db.query.orderTable.findFirst({
-        where: eq(orderTable.mealId, orderId),
+        where: eq(orderTable.orderId, orderId),
         with:{
             meal:{
                 columns:{

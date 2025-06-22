@@ -21,7 +21,7 @@ orderRouter.get('/orders/:id', getOrderById);
 orderRouter.post('/orders', createOrder);
 
 // Update an existing Order
-orderRouter.put('/orders/:id',adminRoleAuth,updateOrder);
+orderRouter.put('/orders/:id',updateOrder);
 
 
 // Delete an existing Order

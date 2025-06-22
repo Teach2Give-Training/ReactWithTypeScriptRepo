@@ -1,1 +1,0 @@
-ALTER TABLE "mealTable" ADD COLUMN "rating" integer DEFAULT 0;

@@ -1,8 +1,8 @@
 import { relations } from "drizzle-orm";
-import { pgTable, serial, text, timestamp, integer, varchar, pgEnum } from "drizzle-orm/pg-core";
+import { pgTable, serial, decimal, timestamp, integer, varchar, pgEnum } from "drizzle-orm/pg-core";
 
-export const roleEnum = pgEnum("userType", ['member', 'admin']);
-export const statusEnum = pgEnum("statusType",['pending','canceled','completed'])
+export const roleEnum = pgEnum("userType", ['member', 'admin', 'disabled']);
+export const statusEnum = pgEnum("statusType", ['pending', 'canceled', 'completed'])
 
 
 
@@ -11,6 +11,7 @@ export const userTable = pgTable("userTable", {
     userId: serial("userId").primaryKey(),
     firstName: varchar("firstName"),
     lastName: varchar("lastName"),
+    profileUrl: varchar("profileUrl").default("null"),
     email: varchar("email").notNull(),
     password: varchar("password").notNull(),
     userType: roleEnum("userType").default('member'),
@@ -24,7 +25,7 @@ export const mealTable = pgTable("mealTable", {
     mealName: varchar("mealName"),
     mealUrl: varchar("mealUrl"),
     mealDescription: varchar("mealDescription").notNull(),
-    mealPrice: varchar("mealPrice").notNull(),
+    mealPrice: decimal("mealPrice").notNull(),
     mealBadge: varchar("mealBadge"),
     rating: integer("rating").default(0),
     createdAt: timestamp('createdAt').defaultNow(),
@@ -32,11 +33,11 @@ export const mealTable = pgTable("mealTable", {
 });
 
 //Order table 3
-export const orderTable = pgTable("orderTable",{
-    orderId:serial("orderId").primaryKey(),
-    mealId:integer("mealId").notNull().references(()=>mealTable.mealId,{onDelete:'cascade'}),
-    userId:integer("userId").notNull().references(()=>userTable.userId,{onDelete:'cascade'}),
-    status:statusEnum("statusType").default('pending'),
+export const orderTable = pgTable("orderTable", {
+    orderId: serial("orderId").primaryKey(),
+    mealId: integer("mealId").notNull().references(() => mealTable.mealId, { onDelete: 'cascade' }),
+    userId: integer("userId").notNull().references(() => userTable.userId, { onDelete: 'cascade' }),
+    status: statusEnum("statusType").default('pending'),
     createdAt: timestamp('createdAt').defaultNow(),
     updatedAt: timestamp('updatedAt').defaultNow(),
 })
@@ -59,25 +60,28 @@ export type TOrderSelect = typeof orderTable.$inferSelect;
 //relation btn order(1) --> (1)user & (1)meal
 export const orderUserMealRelation = relations(orderTable, ({ one }) => ({
     user: one(userTable, {
-        fields: [orderTable.orderId],
+        fields: [orderTable.userId],
         references: [userTable.userId]
     }),
-    meal:one(mealTable,{
-        fields:[orderTable.orderId],
-        references:[mealTable.mealId]
+    meal: one(mealTable, {
+        fields: [orderTable.mealId],
+        references: [mealTable.mealId]
     })
 }));
 
 // many to one rln
 //relation btn user(1) --> (m)order
-export const userOrderRelation = relations(userTable,({many})=>({
-    orders:many(orderTable)
+export const userOrderRelation = relations(userTable, ({ many }) => ({
+    orders: many(orderTable)
 }))
 
 // many to one rln
 //relation btn meal(1) --> (m)order
-export const mealOrderRelation = relations(mealTable,({many})=>({
-    meals:many(orderTable)
+export const mealOrderRelation = relations(mealTable, ({ many }) => ({
+    meals: many(orderTable)
 }))
+
+
+
 
 

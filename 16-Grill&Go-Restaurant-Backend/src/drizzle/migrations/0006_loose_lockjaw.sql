@@ -1,1 +1,0 @@
-ALTER TABLE "orderTable" ADD COLUMN "orderId" serial PRIMARY KEY NOT NULL;

@@ -9,30 +9,35 @@ export const ordersApi = createApi({
   tagTypes: ['orders', 'order'],
   endpoints: (builder) => ({
     createOrder: builder.mutation({
-      query: (createMealPayload) => ({
-        url: 'meals',
+      query: (createOrderPayload) => ({
+        url: 'orders',
         method: 'POST',
-        body: createMealPayload,
+        body: createOrderPayload,
       }),
       invalidatesTags: ["orders"]
     }),
     updateOrder: builder.mutation({
-      query: (mealUpdatePayload) => ({
-        url: 'meals',
+      query: ({orderId,...orderUpdatePayload}) => ({
+        url: `orders/${orderId}`,
         method: 'PUT',
-        body: mealUpdatePayload,
+        body: orderUpdatePayload,
       }),
+       invalidatesTags:['orders']
     }),
     getAllOrders: builder.query({
-      query: () => 'meals',
+      query: () => 'orders',
       providesTags: ["orders"]
     }),
     getAllOrderById: builder.query({
-      query: (mealId) => `meals/${mealId}`,
+      query: (orderId) => `orders/${orderId}`,
+    }),
+    getAllOrderForOneUserById: builder.query({
+      query: (userId) => `orders/user?userId=${userId}`,
+      providesTags: ["orders"]
     }),
     deleteOrder: builder.mutation({
-      query: (mealId) => ({
-        url: `meals/${mealId}`,
+      query: (orderId) => ({
+        url: `orders/${orderId}`,
         method: 'DELETE',
       }),
       invalidatesTags:['orders']

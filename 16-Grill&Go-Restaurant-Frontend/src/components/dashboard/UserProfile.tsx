@@ -20,7 +20,7 @@ const UserProfile = () => {
   
   const navigate = useNavigate();
   const { user, isAuthenticated, userType } = useSelector((state: RootState) => state.auth);
-  const profilePicture = user?.profile_picture || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.firstName)}&background=4ade80&color=fff&size=128`;
+  const profilePicture = user?.profileUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.firstName)}&background=4ade80&color=fff&size=128`;
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const handleModalToggle = () => {

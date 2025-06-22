@@ -1,15 +1,17 @@
-import { MdAdd, MdStar } from "react-icons/md";
+import { MdStar } from "react-icons/md";
 import { mealApi } from "../../features/api/mealsApi";
 import { CgShoppingCart } from "react-icons/cg";
 import { PuffLoader } from "react-spinners";
 import { FaSignInAlt } from "react-icons/fa";
 import { useSelector } from "react-redux";
 import type { RootState } from "../../app/store";
+import Swal from "sweetalert2"
+import { ordersApi } from "../../features/api/ordersApi";
 
 interface MealData {
     mealId: number,
     mealName: string,
-    mealPrice: string,
+    mealPrice: number,
     mealDescription: string,
     mealUrl: string,
     mealBadge: string,
@@ -29,8 +31,11 @@ const getBadgeColor = (badge: any) => {
     }
 }
 
+
+
 export const FoodCardSection = () => {
-    const {isAuthenticated} = useSelector((state:RootState)=>state.auth)
+    const { isAuthenticated,user } = useSelector((state: RootState) => state.auth)
+    const userId = user?.userId
 
     // const page= 1
 
@@ -38,7 +43,35 @@ export const FoodCardSection = () => {
         pollingInterval: 3000,
     })
 
-    console.log("🚀 ~ FoodCardSection ~ mealData:", mealData)
+    const [makeAnOrder] = ordersApi.useCreateOrderMutation()
+
+    // console.log("🚀 ~ FoodCardSection ~ mealData:", mealData)
+
+    const handleMakeAnOrder = async(mealId: number, mealName: string, mealPrice: number) => {
+        Swal.fire({
+            title: "Are you sure?",
+            html: `<div>
+                <b>Meal:</b> ${mealName}<br/>
+                <b>Price:</b> Ksh: ${mealPrice}
+               </div>
+               <div style="margin-top:10px;">Do you want to place this order?</div>`,
+            icon: "question",
+            showCancelButton: true,
+            confirmButtonColor: "#2563eb",
+            cancelButtonColor: "#f44336",
+            confirmButtonText: "Yes, order it!",
+        }).then(async (result) => {
+            if (result.isConfirmed) {
+                try {
+                    const res = await makeAnOrder({userId,mealId})
+                    // console.log(res)
+                    Swal.fire("Ordered!", res.data.message, "success");
+                } catch (error) {
+                    Swal.fire("Something went wrong","Pleese Try Again", "error")
+                }                
+            }
+        });
+    }
     return (
         <section className="py-20 bg-gradient-to-b from-orange-50 to-amber-50 px-4">
             <div className="max-w-7xl mx-auto">
@@ -62,12 +95,12 @@ export const FoodCardSection = () => {
 
                         {
                             error ? (
-                                <div>
+                                <div className="text-red-500">
                                     Something went wrong try again...
                                 </div>
                             ) : isLoading ? (
                                 <div className="flex justify-center items-center">
-                                    <PuffLoader color="#43411e" />
+                                    <PuffLoader color="#0aff13" />
                                 </div>
                             ) : mealData.length === 0 ? (
                                 <div>
@@ -112,7 +145,10 @@ export const FoodCardSection = () => {
 
                                             {/* Action Button */}
                                             {isAuthenticated ? (
-                                                <button className="btn w-full bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white border-none shadow-md hover:shadow-lg transform hover:scale-105 transition-all duration-200">
+                                                <button
+                                                    className="btn w-full bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white border-none shadow-md hover:shadow-lg transform hover:scale-105 transition-all duration-200"
+                                                    onClick={() => handleMakeAnOrder(meal.mealId, meal.mealName, meal.mealPrice)}
+                                                >
                                                     <CgShoppingCart className="text-lg" />
                                                     Make an Order
                                                 </button>

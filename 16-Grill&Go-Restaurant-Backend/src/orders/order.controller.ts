@@ -6,7 +6,7 @@ import { createOrderServices, deleteOrderServices, getAllOrdersForOneUserService
 export const getOrders = async (req: Request, res: Response) => {
     try {
         const allOrders = await getAllOrdersServices();
-        if (allOrders == null || allOrders.length == 0) {
+        if (allOrders == null ) {
             res.status(404).json({ message: "No orders found" });
         } else {
             res.status(200).json(allOrders);
