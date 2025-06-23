@@ -2,6 +2,12 @@ import { FaUsers, FaDollarSign } from 'react-icons/fa';
 import { motion } from 'framer-motion';
 import { LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts';
 import { BiFoodMenu, BiSolidFoodMenu } from 'react-icons/bi';
+import { ordersApi } from '../../features/api/ordersApi';
+import { useSelector } from 'react-redux';
+import type { RootState } from '../../app/store';
+import { PuffLoader } from 'react-spinners';
+import { userApi } from '../../features/api/userApi';
+import { mealApi } from '../../features/api/mealsApi';
 
 const cardVariants = {
   hover: {
@@ -18,40 +24,46 @@ const cardVariants = {
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'];
 
 // 🟢 Mocked Static Data
-const ordersData = [
-  { orderStatus: 'confirmed', payment_amount: 1500 },
-  { orderStatus: 'pending', payment_amount: 0 },
-  { orderStatus: 'canceled', payment_amount: 0 },
-  { orderStatus: 'confirmed', payment_amount: 2000 },
-];
+// const ordersData = [
+//   { orderStatus: 'confirmed', payment_amount: 1500 },
+//   { orderStatus: 'pending', payment_amount: 0 },
+//   { orderStatus: 'canceled', payment_amount: 0 },
+//   { orderStatus: 'confirmed', payment_amount: 2000 },
+// ];
 
-const mealsData = [
-  { id: 1, name: 'Burger' },
-  { id: 2, name: 'Pizza' },
-];
+interface OrderDetails {
+  orderId: number,
+  userId: number,
+  mealId: number,
+  createdAt: string,
+  status: string,
+  meal: {
+    mealName: string,
+    mealBadge: string,
+    mealPrice: number,
+    mealUrl: string
+  }
+}
 
-const usersProfile = [
-  { id: 1, name: 'Jane' },
-  { id: 2, name: 'John' },
-  { id: 3, name: 'Alice' },
-];
+// const mealsData = [
+//   { id: 1, name: 'Burger' },
+//   { id: 2, name: 'Pizza' },
+// ];
 
-const confirmedOrders = ordersData.filter(o => o.orderStatus === 'confirmed').length;
-const pendingOrders = ordersData.filter(o => o.orderStatus === 'pending').length;
-const canceledOrder = ordersData.filter(o => o.orderStatus === 'canceled').length;
+// const usersProfile = [
+//   { id: 1, name: 'Jane' },
+//   { id: 2, name: 'John' },
+//   { id: 3, name: 'Alice' },
+// ];
 
-const usersCount = usersProfile.length;
-const mealsCount = mealsData.length;
 
-const totalRevenue = ordersData
-  .filter(o => o.orderStatus === 'confirmed')
-  .reduce((sum, order) => sum + Number(order.payment_amount), 0);
 
-const pieData = [
-  { name: 'Confirmed Orders', value: confirmedOrders },
-  { name: 'Pending Orders', value: pendingOrders },
-  { name: 'Canceled Orders', value: canceledOrder },
-];
+// const usersCount = usersProfile.length;
+// const mealsCount = mealsData.length;
+
+
+
+
 
 const lineData = [
   { name: 'Jan', value: 5000 },
@@ -61,7 +73,42 @@ const lineData = [
   { name: 'May', value: 7000 },
 ];
 
-export const Analytics =()=> {
+export const Analytics = () => {
+  const { isAuthenticated } = useSelector((state: RootState) => state.auth)
+
+  const { data: ordersData = [], isLoading } = ordersApi.useGetAllOrdersQuery({
+    skip: !isAuthenticated
+  })
+  const { data: usersData = [], isLoading: userDataIsLoading } = userApi.useGetAllUsersProfilesQuery({
+    skip: !isAuthenticated
+  })
+  const { data: mealsData = [], isLoading: mealsDataIsLoading } = mealApi.useGetAllMealsQuery({
+    skip: !isAuthenticated
+  })
+  console.log("🚀 ~ Analytics ~ mealsData:", mealsData)
+
+  // console.log("🚀 ~ Analytics ~ orderData:", ordersData)
+
+  const confirmedOrders = ordersData.filter((orders: OrderDetails) => orders.status === 'confirmed').length;
+  const pendingOrders = ordersData.filter((orders: OrderDetails) => orders.status === 'pending').length;
+  const canceledOrder = ordersData.filter((orders: OrderDetails) => orders.status === 'canceled').length;
+
+  const totalRevenue = ordersData
+    .filter((order: OrderDetails) => order.status === 'confirmed')
+    .reduce((sum: number, order: OrderDetails) => sum + Number(order.meal.mealPrice), 0);
+
+  const pieData = [
+    { name: 'Confirmed Orders', value: confirmedOrders },
+    { name: 'Pending Orders', value: pendingOrders },
+    { name: 'Canceled Orders', value: canceledOrder },
+  ];
+
+  const usersCount = usersData.length;
+  const mealsCount = mealsData.length;
+
+
+
+
   return (
     <>
       {/* ...Breadcrumb omitted for brevity... */}
@@ -73,21 +120,41 @@ export const Analytics =()=> {
           whileHover="hover"
           whileTap="tap"
         >
-          <BiSolidFoodMenu size={40} />
-          <h2 className="text-2xl font-bold mt-4">Orders</h2>
-          <p className="text-lg mt-2">{confirmedOrders + canceledOrder + pendingOrders}</p>
+          {isLoading ? (
+            <div>
+              <PuffLoader color="#0aff13" />
+            </div>
+          ) : (
+            <>
+              <BiSolidFoodMenu size={40} />
+              <h2 className="text-2xl font-bold mt-4">Orders</h2>
+              <p className="text-lg mt-2">{confirmedOrders + canceledOrder + pendingOrders}</p>
+            </>
+          )}
+
         </motion.div>
 
-         {/* Users */}
+        {/* Users */}
         <motion.div
           className="card bg-orange-500 text-white p-6 rounded-lg shadow-lg flex flex-col items-center"
           variants={cardVariants}
           whileHover="hover"
           whileTap="tap"
         >
-          <FaUsers size={40} />
-          <h2 className="text-2xl font-bold mt-4">Users</h2>
-          <p className="text-lg mt-2">{usersCount}</p>
+          {
+            userDataIsLoading ? (
+              <div>
+                <PuffLoader color="#0aff13" />
+              </div>
+            ) : (
+              <>
+                <FaUsers size={40} />
+                <h2 className="text-2xl font-bold mt-4">Users</h2>
+                <p className="text-lg mt-2">{usersCount}</p>
+              </>
+            )
+          }
+
         </motion.div>
 
         {/* Meals */}
@@ -97,9 +164,20 @@ export const Analytics =()=> {
           whileHover="hover"
           whileTap="tap"
         >
-          <BiFoodMenu size={40} />
-          <h2 className="text-2xl font-bold mt-4">Meals</h2>
-          <p className="text-lg mt-2">{mealsCount}</p>
+          {
+            mealsDataIsLoading ? (
+              <div>
+                <PuffLoader color="#0aff13" />
+              </div>
+            ) : (
+              <>
+                <BiFoodMenu size={40} />
+                <h2 className="text-2xl font-bold mt-4">Meals</h2>
+                <p className="text-lg mt-2">{mealsCount}</p>
+              </>
+            )
+          }
+
         </motion.div>
 
         {/* Revenue */}
@@ -115,7 +193,7 @@ export const Analytics =()=> {
         </motion.div>
       </div>
 
-     
+
 
       {/* Charts */}
       <div className="container mx-auto py-12 px-4">

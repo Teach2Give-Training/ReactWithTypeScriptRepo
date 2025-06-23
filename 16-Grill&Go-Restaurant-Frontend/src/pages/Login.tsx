@@ -1,6 +1,6 @@
 import { Link } from "react-router";
 import { Footer } from "../components/Footer";
-import {Navbar} from "../components/Navbar";
+import { Navbar } from "../components/Navbar";
 import loginImg from "../../src/assets/register.svg";
 import { useForm } from "react-hook-form"
 import { Toaster, toast } from "sonner";
@@ -11,37 +11,42 @@ import { setCredentials } from "../features/auth/authSlice";
 import { FaSignInAlt } from "react-icons/fa";
 
 type UserLoginFormValues = {
-  email: string;
-  password: string;
+    email: string;
+    password: string;
 }
 export const Login = () => {
-     const navigate = useNavigate();
-      const dispatch = useDispatch();
-     const { register, handleSubmit, formState: { errors } } = useForm<UserLoginFormValues>();
-     const [loginUser,{isLoading}] = userApi.useLoginUserMutation()
+    const navigate = useNavigate();
+    const dispatch = useDispatch();
+    const { register, handleSubmit, formState: { errors } } = useForm<UserLoginFormValues>();
+    const [loginUser, { isLoading }] = userApi.useLoginUserMutation()
 
-     const onSubmit = async (data: UserLoginFormValues) => {
-    const loadingToastId = toast.loading("Creating Account...");
-    // console.log(data)
-    try {
-      const res = await loginUser(data).unwrap()
-      console.log(res)
-        dispatch(setCredentials(res))
-        toast.success(res?.message, { id: loadingToastId })
-        navigate("/dashboard/me")
-    } catch (err: any) {
-      toast.error('Failed to Login: ' + (err.data?.message || err.message || err.error || err));
-      toast.dismiss(loadingToastId)
+    const onSubmit = async (data: UserLoginFormValues) => {
+        const loadingToastId = toast.loading("Creating Account...");
+        // console.log(data)
+        try {
+            const res = await loginUser(data).unwrap()
+            console.log(res)
+            dispatch(setCredentials(res))
+            toast.success(res?.message, { id: loadingToastId })
+            if (res.userType === "admin") {
+                navigate("/admindashboard/analytics")
+            } else {
+                navigate("/dashboard/me")
+            }
+
+        } catch (err: any) {
+            toast.error('Failed to Login: ' + (err.data?.message || err.message || err.error || err));
+            toast.dismiss(loadingToastId)
+        }
+
     }
-
-  }
 
     return (
         <>
-         <Toaster
-        richColors
-        position="top-right"
-      />
+            <Toaster
+                richColors
+                position="top-right"
+            />
             <Navbar />
             <div className="min-h-screen bg-gradient-to-br from-orange-50 via-amber-50 to-orange-100 flex items-center justify-center py-10">
                 <div className="grid sm:grid-cols-2 gap-10 bg-white rounded-3xl  overflow-hidden w-full max-w-5xl">
@@ -59,20 +64,20 @@ export const Login = () => {
 
                             <label className="block">
                                 <span className="text-gray-700">Email</span>
-                                <input type="email" 
-                                className="input input-bordered  
-                                border-2 w-full mt-1" 
-                                placeholder="Email" 
-                                {...register("email", { required: true })}
+                                <input type="email"
+                                    className="input input-bordered  
+                                border-2 w-full mt-1"
+                                    placeholder="Email"
+                                    {...register("email", { required: true })}
                                 />
                             </label>
-                                {errors.email && <span className="text-red-600">Email is required</span>}
+                            {errors.email && <span className="text-red-600">Email is required</span>}
                             <label className="block">
                                 <span className="text-gray-700">Password</span>
-                                <input type="password" 
-                                className="input input-bordered border-2 w-full mt-1" 
-                                placeholder="Password" 
-                                {...register("password", { required: true })}
+                                <input type="password"
+                                    className="input input-bordered border-2 w-full mt-1"
+                                    placeholder="Password"
+                                    {...register("password", { required: true })}
                                 />
                             </label>
                             {errors.password && <span className="text-red-600">Password is required</span>}

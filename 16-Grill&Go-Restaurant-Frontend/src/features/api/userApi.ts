@@ -23,7 +23,7 @@ export const userApi = createApi({
       query: (user_id: number) => `users/${user_id}`,
       providesTags: ["user",]
     }),
-    getUsersProfiles: builder.query({
+    getAllUsersProfiles: builder.query({
       query: () => 'users',
       providesTags: ["users"]
     }),

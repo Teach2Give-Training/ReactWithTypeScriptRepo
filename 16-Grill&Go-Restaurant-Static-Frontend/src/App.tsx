@@ -65,8 +65,7 @@ function App() {
       {
         path: "payments",
         element: <MyPayments />,
-      },
-      
+      },      
     ]    
   },
   {
