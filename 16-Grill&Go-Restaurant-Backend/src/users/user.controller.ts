@@ -8,12 +8,14 @@ export const getUsers = async (req: Request, res: Response) => {
     try {
         const allUsers = await getUsersServices();
         if (allUsers == null || allUsers.length == 0) {
-          res.status(404).json({ message: "No users found" });
-        }else{
-            res.status(200).json(allUsers);             
-        }            
-    } catch (error:any) {
-        res.status(500).json({ error:error.message || "Failed to fetch users" });
+            res.status(404).json({ message: "No users found" });
+        } else {
+            // Remove password from each user object before sending response
+            const usersWithoutPasswords = allUsers.map(({ password, ...user }) => user);
+            res.status(200).json(usersWithoutPasswords);
+        }
+    } catch (error: any) {
+        res.status(500).json({ error: error.message || "Failed to fetch users" });
     }
 }
 
@@ -28,7 +30,9 @@ export const getUserById = async (req: Request, res: Response) => {
         if (user == undefined) {
             res.status(404).json({ message: "User not found" });
         } else {
-            res.status(200).json(user);
+            // Remove password from user object before sending response
+            const { password, ...userWithoutPassword } = user;
+            res.status(200).json(userWithoutPassword);
         }
     } catch (error:any) {
         res.status(500).json({ error:error.message || "Failed to fetch user" });
@@ -61,13 +65,13 @@ export const updateUser = async (req: Request, res: Response) => {
         res.status(400).json({ error: "Invalid user ID" });
         return; // Prevent further execution
     }
-    const { firstName,lastName, email, password } = req.body;
-    if (!firstName || !lastName || !email || !password) {
-        res.status(400).json({ error: "All fields are required" });
-        return; // Prevent further execution
-    }
+    const { firstName,lastName,profileUrl } = req.body;
+    // if (!firstName || !lastName || !email ) {
+    //     res.status(400).json({ error: "All fields are required" });
+    //     return; // Prevent further execution
+    // }
     try {
-        const updatedUser = await updateUserServices(userId, { firstName,lastName, email, password });
+        const updatedUser = await updateUserServices(userId, { firstName,lastName,profileUrl});
         if (updatedUser == null) {
             res.status(404).json({ message: "User not found or failed to update" });
         } else {

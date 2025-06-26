@@ -1,4 +1,3 @@
-import { AiFillDelete } from "react-icons/ai"
 import { FiEdit } from "react-icons/fi"
 import { ordersApi } from "../../features/api/ordersApi"
 import { useSelector } from "react-redux"

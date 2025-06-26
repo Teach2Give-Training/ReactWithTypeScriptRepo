@@ -5,23 +5,34 @@ import { useNavigate } from 'react-router-dom';
 import { useForm, type SubmitHandler } from 'react-hook-form';
 import type { RootState } from '../../app/store';
 import { SaveIcon } from 'lucide-react';
+import axios from 'axios';
+import { userApi } from '../../features/api/userApi';
+import { toast, Toaster } from 'sonner';
 
 
 interface FormValues {
   firstName: string;
   lastName: string;
   email: string;
-  address: string;
-  password?: string;
+  userId:number
 }
 
 
 const UserProfile = () => {
-  
+  const cloud_name = "your_cloud_name";
+  const preset_key = "your_preset_key";
+  const [imageProfile, setImageProfile] = useState<string>("");
+  const [updateProfile] = userApi.useUpdateUserProfileMutation()
   const navigate = useNavigate();
   const { user, isAuthenticated, userType } = useSelector((state: RootState) => state.auth);
-  const profilePicture = user?.profileUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.firstName)}&background=4ade80&color=fff&size=128`;
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const { register, handleSubmit,reset, formState: { errors } } = useForm<FormValues>();
+  const userId = user?.userId
+  const { data: userDetails = [] } = userApi.useGetUserByIdQuery(userId, {
+    skip: !isAuthenticated
+  })
+  const profilePicture = userDetails?.profileUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.firstName)}&background=4ade80&color=fff&size=128`;
+  // console.log("🚀 ~ UserProfile ~ userId:", userId)
 
   const handleModalToggle = () => {
     setIsModalOpen(!isModalOpen);
@@ -35,32 +46,87 @@ const UserProfile = () => {
     }
   }, [isAuthenticated, userType, navigate]);
 
-  const { register, handleSubmit, formState: { errors } } = useForm<FormValues>();
 
   const onSubmit: SubmitHandler<FormValues> = async (data) => {
-    console.log(data)
+    const loadingToastId = toast.loading("Updating you details...");
+    const updateData ={
+      ...data,
+      userId:userId
+    }
+    try {
+
+      const res = await updateProfile(updateData).unwrap();
+      toast.success(res.message, { id: loadingToastId })
+      reset()
+      setIsModalOpen(false)
+    } catch (error: any) {
+      toast.error('Failed to update profile . Please try again.', error);
+      toast.dismiss(loadingToastId)
+    }
 
   };
 
-  
+  const handleFileChange = async (e: any) => {
+    const file = e.target.files[0];
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("upload_preset", preset_key);
+    try {
+      const res = await axios(`https://api.cloudinary.com/v1_1/${cloud_name}/image/upload`, {
+        method: "POST",
+        data: formData
+      });
+      const data = await res.data;
+      setImageProfile(data.secure_url);
+      console.log(data.secure_url);
+    } catch (err: any) {
+      console.log(err);
+    }
+  }
+
+  useEffect(() => {
+    const updateProfilePic = async () => {
+      if (imageProfile) {
+        const loadingToastId = toast.loading("Updating your Profile Images...");
+        try {
+          const res = await updateProfile({ userId: userId, profileUrl: imageProfile }).unwrap();
+          toast.success(res.message, { id: loadingToastId })
+        } catch (error: any) {
+          toast.error('Failed to update profile picture. Please try again.', error);
+          toast.dismiss(loadingToastId)
+        }
+      }
+    };
+
+    updateProfilePic();
+  }, [imageProfile, user]);
+
+
 
   return (
+
     <div className="min-h-screen text-white py-10 px-5">
+      <Toaster
+        richColors
+        position="top-right"
+      />
+
       <div className="max-w-4xl mx-auto rounded-lg shadow-lg p-5">
+
         <div className="flex flex-col md:flex-row items-center justify-between border-b border-gray-700 pb-5 mb-5">
           <div className="relative flex items-center gap-4 mb-4 md:mb-0">
             <img
-              src={user?.profileUrl || profilePicture}
+              src={userDetails?.profileUrl || profilePicture}
               alt="Profile"
               className="w-24 h-24 rounded-full border-4 border-orange-500"
             />
             <label className="absolute bottom-0 bg-orange-500 p-2 rounded-full cursor-pointer">
               <FaCamera />
-              <input type="file" className="hidden"  />
+              <input type="file" className="hidden" onChange={handleFileChange} />
             </label>
             <div>
-              <h2 className="text-3xl font-bold">{user?.firtname}</h2>
-              <p className="text-gray-400">{user?.email}</p>
+              <h2 className="text-3xl font-bold text-orange-500">{userDetails?.firstName}</h2>
+              <p className="text-orange-400">{userDetails?.email}</p>
             </div>
           </div>
           <button
@@ -75,10 +141,10 @@ const UserProfile = () => {
           <div className="bg-gradient-to-r from-orange-600 to-amber-600 rounded-lg p-4">
             <h3 className="text-2xl font-bold mb-3">Personal Information</h3>
             <p className="mb-2">
-              <span className="font-bold">First Name:</span> {user?.firstName}
+              <span className="font-bold">First Name:</span> {userDetails?.firstName}
             </p>
             <p className="mb-2">
-              <span className="font-bold">First Name:</span> {user?.lastName}
+              <span className="font-bold">First Name:</span> {userDetails?.lastName}
             </p>
           </div>
           <div className="bg-gradient-to-r from-orange-600 to-amber-600 rounded-lg p-4">
@@ -133,13 +199,13 @@ const UserProfile = () => {
                 />
                 {errors.email && <p className="text-red-500 text-sm">{errors.email.message}</p>}
               </div>
-              
+
               <div className="flex justify-end">
                 <button onClick={handleModalToggle} className=" btn mr-2 btn-error">
                   <FaTimes /> Cancel
                 </button>
                 {/* <button type="submit" className="btn btn-primary" disabled={isLoading}> */}
-                <button type="submit" className="btn btn-primary" >                 
+                <button type="submit" className="btn btn-primary" >
                   <SaveIcon /> Save Profile  {/* {isLoading ? 'Updating...' : 'Update Profile'} */}
                 </button>
               </div>

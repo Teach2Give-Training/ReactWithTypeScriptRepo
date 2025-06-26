@@ -1,8 +1,19 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
+import {apiDomain} from "../../proxxy/proxxy"
+import type { RootState } from '../../app/store';
 
 export const userApi = createApi({
   reducerPath: 'userApi',
-  baseQuery: fetchBaseQuery({ baseUrl: 'http://localhost:5000/api/' }),
+  baseQuery: fetchBaseQuery({ baseUrl: apiDomain,
+    prepareHeaders:(headers,{getState})=>{
+      const token = (getState() as RootState).auth.token;
+      if(token){
+        headers.set('Authorization',  `${token}`);
+      }
+      headers.set('Content-Type','application/json');
+      return headers;
+    }
+   }),
   tagTypes: ['users', 'user'],
   endpoints: (builder) => ({
     loginUser: builder.mutation({
@@ -20,7 +31,7 @@ export const userApi = createApi({
       }),
     }),
     getUserById: builder.query({
-      query: (user_id: number) => `users/${user_id}`,
+      query: (userId: number) => `users/${userId}`,
       providesTags: ["user",]
     }),
     getAllUsersProfiles: builder.query({
@@ -32,21 +43,13 @@ export const userApi = createApi({
       providesTags: ["user"]    
     }),
     updateUserProfile: builder.mutation({
-      query: ({ user_id, ...patch }) => ({
-        url: `users/${user_id}`,
+      query: ({ userId, ...patch }) => ({
+        url: `users/${userId}`,
         method: 'PUT',
         body: patch,
       }),
       invalidatesTags: ["user", "users"]
     }),
-  updateUserProfileImage: builder.mutation({
-    query: ({ user_id, profile_picture }) => ({
-      url: `users/${user_id}`,
-      method: 'PUT',
-      body: { profile_picture },
-    }),
-    invalidatesTags: ["user", "users"]
-  }),
     deleteUserProfile: builder.mutation({
       query: (user_id) => ({
         url: `users/${user_id}`,

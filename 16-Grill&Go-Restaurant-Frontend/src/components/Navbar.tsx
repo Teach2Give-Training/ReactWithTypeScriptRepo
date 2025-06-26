@@ -7,6 +7,7 @@ import { FaSignOutAlt } from "react-icons/fa";
 import { GrDashboard } from "react-icons/gr";
 import { Link, useNavigate } from "react-router-dom";
 import { clearCredentials } from "../features/auth/authSlice";
+import { userApi } from "../features/api/userApi";
 
 export const Navbar = () => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -16,7 +17,13 @@ export const Navbar = () => {
     const dispatch = useDispatch();
     const navigate = useNavigate();
 
-    const { isAuthenticated,user } = useSelector((state: RootState) => state.auth);
+    const { isAuthenticated, user } = useSelector((state: RootState) => state.auth);
+    const userId = user?.userId;
+     const { data: userDetails = [] } = userApi.useGetUserByIdQuery(userId, {
+        skip: !isAuthenticated
+      })
+
+    const profilePicture = userDetails?.profileUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(userDetails.firstName)}&background=4ade80&color=fff&size=128`;
 
     const handleLogout = () => {
         dispatch(clearCredentials());
@@ -136,48 +143,41 @@ export const Navbar = () => {
                 </div>
             ) : (
                 <div className="navbar-end hidden lg:flex gap-2 ">
-                <div className="dropdown dropdown-end bg-amber-200">
-                    <button className="btn btn-ghost flex items-center">
-                        <div className="flex items-center">
-                            <span className="text-dark">Hey, {user.firstName}</span>
-                            <svg
-                                className="w-6 h-6 text-orange-400"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                                xmlns="http://www.w3.org/2000/svg"
-                            >
-                                <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth={2}
-                                    d="M19 9l-7 7-7-7"
-                                />
-                            </svg>
-                           
-                        </div>
-                    </button>
-                    <ul className="dropdown-content bg-neutral-200 rounded-box z-[1] mt-3 w-52 p-2 shadow">
-                        <li>
-                            <Link
-                                to="/dashboard/me"
-                                className="flex items-center text-slate-950 hover:text-gray-300 mb-2"
-                            >
-                                <GrDashboard className="mr-3 text-xl text-orange-600" />
-                                Dashboard
-                            </Link>
-                        </li>
-                        <li>
-                            <button
-                                onClick={handleLogout}
-                                className="flex items-center text-slate-950 hover:text-gray-300"
-                            >
-                                <FaSignOutAlt className="text-xl text-orange-600 mr-3" />
-                                Logout
-                            </button>
-                        </li>
-                    </ul>
-                </div>
+                    <div className="dropdown dropdown-end ">
+                        <button className="btn btn-ghost flex items-center bg-orange-500">
+                            <div className="flex items-center">
+                                <span className="text-dark mr-2">Hey, {userDetails.firstName} </span>
+                                <div tabIndex={0} role="button" className="btn btn-ghost btn-circle avatar">
+                                    <div className="w-10 rounded-full">
+                                        <img
+                                            alt="profile"
+                                            src={profilePicture} />
+                                    </div>
+                                </div>
+
+                            </div>
+                        </button>
+                        <ul className="dropdown-content bg-neutral-200 rounded-box z-[1] mt-3 w-52 p-2 shadow">
+                            <li>
+                                <Link
+                                    to={user.userType === "admin" ? '/admindashboard/analytics' : '/dashboard/me'}
+                                    className="flex items-center text-slate-950 hover:text-gray-300 mb-2"
+                                >
+                                    <GrDashboard className="mr-3 text-xl text-orange-600" />
+                                    Dashboard
+                                </Link>
+                            </li>
+                            <li>
+                                <button
+                                    onClick={handleLogout}
+                                    className="flex items-center text-slate-950 hover:text-gray-300"
+                                >
+                                    <FaSignOutAlt className="text-xl text-orange-600 mr-3" />
+                                    Logout
+                                </button>
+                            </li>
+                        </ul>
+                    </div>
                 </div>
             )}
 

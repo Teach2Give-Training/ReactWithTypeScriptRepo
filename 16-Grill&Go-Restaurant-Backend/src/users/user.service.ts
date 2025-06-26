@@ -27,7 +27,7 @@ export const createUserServices = async(user:TUserInsert):Promise<string> => {
 }
 
 // Update an existing user
-export const updateUserServices = async(userId: number, user:TUserInsert):Promise<string> => {
+export const updateUserServices = async(userId: number, user:Partial<TUserInsert>):Promise<string> => {
     await db.update(userTable).set(user).where(eq(userTable.userId,userId));
     return "User Updated Succeffully 😎";
 }

@@ -1,11 +1,11 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
+import { apiDomain } from '../../proxxy/proxxy';
 
 export const mealApi = createApi({
   reducerPath: 'mealApi',
-  baseQuery: fetchBaseQuery({ baseUrl: 'http://localhost:5000/api/' }),
+  baseQuery: fetchBaseQuery({ baseUrl: apiDomain }),
   refetchOnReconnect:true,
-  refetchOnMountOrArgChange:true,
-  
+  refetchOnMountOrArgChange:true,  
   tagTypes: ['meals', 'meal'],
   endpoints: (builder) => ({
     createMeal: builder.mutation({

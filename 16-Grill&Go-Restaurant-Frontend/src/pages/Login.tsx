@@ -21,7 +21,7 @@ export const Login = () => {
     const [loginUser, { isLoading }] = userApi.useLoginUserMutation()
 
     const onSubmit = async (data: UserLoginFormValues) => {
-        const loadingToastId = toast.loading("Creating Account...");
+        const loadingToastId = toast.loading("Logging...");
         // console.log(data)
         try {
             const res = await loginUser(data).unwrap()
